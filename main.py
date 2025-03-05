@@ -1,4 +1,5 @@
 import sys
+import json
 import random
 import numpy as np
 from PIL import Image
@@ -11,12 +12,10 @@ try:
         from PyQt5.QtGui import QPixmap
         return QPixmap.fromImage(ImageQt(image))
 except ImportError:
-    # Fallback conversion if ImageQt is not available
     from PyQt5.QtGui import QImage, QPixmap
 
 
     def pil_to_pixmap(image):
-        # Ensure the image is in RGBA mode
         if image.mode != "RGBA":
             image = image.convert("RGBA")
         data = image.tobytes("raw", "RGBA")
@@ -69,8 +68,6 @@ class ColorPaletteApp(QMainWindow):
         self.setGeometry(100, 100, 850, 750)
 
         # Define two application themes as style sheets.
-        # Gradient Galaxy: Dark blue-black with soft purple & pink gradients.
-        # Nature Green: Earthy tones of green, brown, and warm yellow.
         self.themes = {
             "Gradient Galaxy": """
                 QMainWindow { 
@@ -143,6 +140,10 @@ class ColorPaletteApp(QMainWindow):
         self.switch_theme_btn.clicked.connect(self.switch_theme)
         button_layout.addWidget(self.switch_theme_btn)
 
+        self.export_btn = QPushButton("Export Palette", self)
+        self.export_btn.clicked.connect(self.export_palette)
+        button_layout.addWidget(self.export_btn)
+
         layout.addLayout(button_layout)
 
         # Label to display the uploaded image
@@ -189,10 +190,8 @@ class ColorPaletteApp(QMainWindow):
             # Process image for color extraction
             image = image.resize((150, 150))
             img_array = np.array(image)
-            # Handle grayscale images
             if img_array.ndim == 2:
                 img_array = np.stack((img_array,) * 3, axis=-1)
-            # Remove alpha channel if present
             elif img_array.shape[2] == 4:
                 img_array = img_array[:, :, :3]
             img_array = img_array.reshape((-1, 3))
@@ -230,8 +229,7 @@ class ColorPaletteApp(QMainWindow):
             text_item.setDefaultTextColor(text_color)
             text_item.setFont(QFont("Arial", 8))
             text_rect = text_item.boundingRect()
-            text_item.setPos((swatch_size - text_rect.width()) / 2,
-                             (swatch_size - text_rect.height()) / 2)
+            text_item.setPos((swatch_size - text_rect.width()) / 2, (swatch_size - text_rect.height()) / 2)
 
     def is_dark(self, color_hex):
         rgb = tuple(int(color_hex[i:i + 2], 16) for i in (1, 3, 5))
@@ -244,22 +242,44 @@ class ColorPaletteApp(QMainWindow):
         self.info_label.setText(f"Copied: {hex_code}")
 
     def generate_random_colors(self):
-        # Generate a new random palette of 5 colors
         random_scheme = []
         for _ in range(5):
             r = random.randint(0, 255)
             g = random.randint(0, 255)
             b = random.randint(0, 255)
             random_scheme.append('#{:02x}{:02x}{:02x}'.format(r, g, b))
+        self.colors = random_scheme  # Update current palette
         self.display_colors(random_scheme)
         self.info_label.setText("Random colors generated")
 
     def switch_theme(self):
-        # Cycle through the available themes and apply the corresponding style sheet
         self.current_theme_index = (self.current_theme_index + 1) % len(self.theme_names)
         theme_name = self.theme_names[self.current_theme_index]
         self.setStyleSheet(self.themes[theme_name])
         self.info_label.setText(f"Theme switched to: {theme_name}")
+
+    def export_palette(self):
+        # Export the current palette (self.colors) to a JSON or TXT file.
+        if not self.colors:
+            self.info_label.setText("No palette to export!")
+            return
+        # Open a save dialog; allow JSON and TXT files
+        file_path, selected_filter = QFileDialog.getSaveFileName(
+            self, "Export Palette", "", "JSON Files (*.json);;Text Files (*.txt)"
+        )
+        if not file_path:
+            return
+        try:
+            if file_path.endswith(".json") or "JSON" in selected_filter:
+                with open(file_path, "w") as f:
+                    json.dump({"palette": self.colors}, f, indent=4)
+            else:
+                with open(file_path, "w") as f:
+                    for color in self.colors:
+                        f.write(color + "\n")
+            self.info_label.setText(f"Palette exported to: {file_path}")
+        except Exception as e:
+            self.info_label.setText(f"Export error: {str(e)}")
 
 
 if __name__ == "__main__":
