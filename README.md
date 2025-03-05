@@ -22,6 +22,19 @@ The **Image Color Palette Extractor** is a desktop application built with Python
 
 ## Screenshots of the UI
 
+# Galaxy Theme - 
+![image](https://github.com/user-attachments/assets/1129f949-ddc2-4440-9092-0318a18fd1f5)
+
+
+# Nature Theme -
+![image](https://github.com/user-attachments/assets/9b8ca281-c834-4381-bb29-17dab80d3145)
+
+# Image Extraction Demo - 
+![image](https://github.com/user-attachments/assets/68e7dd6b-fb27-48ec-9a9d-7de3f6fe2806)
+
+
+
+
 
 ## How to Run the Project
 1. **Clone the Repository:**
