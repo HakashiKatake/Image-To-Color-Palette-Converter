@@ -27,7 +27,8 @@ The **Image Color Palette Extractor** is a desktop application built with Python
 
 
 # Nature Theme -
-![image](https://github.com/user-attachments/assets/9b8ca281-c834-4381-bb29-17dab80d3145)
+![image](https://github.com/user-attachments/assets/4292bb49-fc53-4a48-811e-c1cae9be117d)
+
 
 # Image Extraction Demo - 
 ![image](https://github.com/user-attachments/assets/68e7dd6b-fb27-48ec-9a9d-7de3f6fe2806)
