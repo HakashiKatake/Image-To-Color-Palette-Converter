@@ -19,6 +19,7 @@ except ImportError:
         if image.mode != "RGBA":
             image = image.convert("RGBA")
         data = image.tobytes("raw", "RGBA")
+        from PyQt5.QtGui import QImage, QPixmap
         qimage = QImage(data, image.size[0], image.size[1], QImage.Format_RGBA8888)
         return QPixmap.fromImage(qimage)
 
@@ -68,6 +69,8 @@ class ColorPaletteApp(QMainWindow):
         self.setGeometry(100, 100, 850, 750)
 
         # Define two application themes as style sheets.
+        # Gradient Galaxy: Dark blue-black with soft purple & pink gradients.
+        # Nature Green: Earthy tones of green, brown, and warm yellow.
         self.themes = {
             "Gradient Galaxy": """
                 QMainWindow { 
@@ -112,6 +115,11 @@ class ColorPaletteApp(QMainWindow):
                 }
             """
         }
+        # Define corresponding image display container styles for each theme
+        self.image_styles = {
+            "Gradient Galaxy": "background-color: rgba(0, 0, 0, 0.5); border: 2px solid #9b59b6;",
+            "Nature Green": "background-color: rgba(59, 83, 35, 0.5); border: 2px solid #6b8e23;"
+        }
         self.theme_names = list(self.themes.keys())
         self.current_theme_index = 0  # Start with Gradient Galaxy
 
@@ -150,7 +158,9 @@ class ColorPaletteApp(QMainWindow):
         self.image_display = QLabel("No image loaded", self)
         self.image_display.setAlignment(Qt.AlignCenter)
         self.image_display.setFixedHeight(250)
-        self.image_display.setStyleSheet("background-color: #ffffff; border: 2px solid #ccc;")
+        # Apply initial image container style
+        current_theme = self.theme_names[self.current_theme_index]
+        self.image_display.setStyleSheet(self.image_styles[current_theme])
         layout.addWidget(self.image_display)
 
         # Color display area
@@ -248,7 +258,7 @@ class ColorPaletteApp(QMainWindow):
             g = random.randint(0, 255)
             b = random.randint(0, 255)
             random_scheme.append('#{:02x}{:02x}{:02x}'.format(r, g, b))
-        self.colors = random_scheme  # Update current palette
+        self.colors = random_scheme
         self.display_colors(random_scheme)
         self.info_label.setText("Random colors generated")
 
@@ -256,14 +266,14 @@ class ColorPaletteApp(QMainWindow):
         self.current_theme_index = (self.current_theme_index + 1) % len(self.theme_names)
         theme_name = self.theme_names[self.current_theme_index]
         self.setStyleSheet(self.themes[theme_name])
+        # Update image container style to match the new theme
+        self.image_display.setStyleSheet(self.image_styles[theme_name])
         self.info_label.setText(f"Theme switched to: {theme_name}")
 
     def export_palette(self):
-        # Export the current palette (self.colors) to a JSON or TXT file.
         if not self.colors:
             self.info_label.setText("No palette to export!")
             return
-        # Open a save dialog; allow JSON and TXT files
         file_path, selected_filter = QFileDialog.getSaveFileName(
             self, "Export Palette", "", "JSON Files (*.json);;Text Files (*.txt)"
         )
